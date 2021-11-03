@@ -1,28 +1,49 @@
 package recognition;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Main {
-    private static final int[][] weights = {{2, 1, 2}, {4, -4, 4}, {2, -1, 2}};
-    private static final int bias = -5;
-    private static final Scanner scanner = new Scanner(System.in);
-
     public static void main(String[] args) {
-        int[][] image = new int[3][3];
+        ArrayList<InputNode> inputNodes = getInputNodes();
+        ArrayList<OutputNode> outputNodes = getOutputNodes(inputNodes);
+        System.out.printf("This number is %d", determineNumber(outputNodes));
+    }
 
-        for (int row = 0; row < 3; row++) {
-            String[] input = scanner.nextLine().split("");
-            for (int col = 0; col < 3; col++) {
-                image[row][col] = input[col].equals("X") ? 1 : 0;
+    private static ArrayList<InputNode> getInputNodes() {
+        final Scanner scanner = new Scanner(System.in);
+        ArrayList<InputNode> inputNodes = new ArrayList<>();
+        int rows = 5;
+        while (rows > 0) {
+            String[] line = scanner.nextLine().split("");
+            for (String ch : line) {
+                inputNodes.add(new InputNode(ch));
+            }
+            rows--;
+        }
+        return inputNodes;
+    }
+
+    private static ArrayList<OutputNode> getOutputNodes(ArrayList<InputNode> inputNodes) {
+        ArrayList<OutputNode> outputNodes = new ArrayList<>();
+        int[][] weights = Weights.getWeights();
+        int[] biases = Weights.getBiases();
+        for (int index = 0; index < biases.length; index++) {
+            outputNodes.add(new OutputNode(inputNodes, weights[index], biases[index]));
+        }
+        return outputNodes;
+    }
+
+    private static int determineNumber(ArrayList<OutputNode> outputNodes) {
+        int max = Integer.MIN_VALUE;
+        int indexOfMax = -1;
+        for (int index = 0; index < outputNodes.size(); index++) {
+            int value = outputNodes.get(index).getValue();
+            if (value > max) {
+                max = value;
+                indexOfMax = index;
             }
         }
-
-        int output = bias;
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                output += image[row][col] * weights[row][col];
-            }
-        }
-
-        System.out.printf("This number is %d", output < 0 ? 1 : 0);
+        return indexOfMax;
     }
 }
